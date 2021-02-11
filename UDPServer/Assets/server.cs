@@ -14,8 +14,8 @@ public class server : MonoBehaviour
 
     public GameObject myCube;
 
-    private static byte[] outBuffer = new byte[512];
-    private static Socket client_socket;
+    //private static byte[] outBuffer = new byte[512];
+    //private static Socket client_socket;
 
     private static byte[] buffer = new byte[512];
     private static IPHostEntry host;
@@ -24,29 +24,17 @@ public class server : MonoBehaviour
     private static Socket server_socket;
     private static IPEndPoint remoteEP;
     private static EndPoint remoteClient;
-
-    //public static void RunClient()
-    //{
-    //    IPAddress ip = IPAddress.Parse("192.168.68.107");
-    //    remoteEP = new IPEndPoint(ip, 11111);
-
-    //    client_socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-    //    //try
-
-    //    outBuffer = Encoding.ASCII.GetBytes("Testing.......... INFR3830");
-    //    client_socket.SendTo(outBuffer, remoteEP);
-
-    //    //client_socket.Shutdown(SocketShutdown.Both);
-    //    //client_socket.Close();
-    //}
+    private static int rec = 0;
+    //private float posx = 0f;
+    //private float posy = 0f;
+    //private float posz = 0f;
 
     public static void RunServer()
     {
 
         host = Dns.GetHostEntry(Dns.GetHostName());
-        ip = host.AddressList[1];
-        //ip = IPAddress.Parse("192.168.68.107"); 
+        //ip = host.AddressList[1];
+        ip = IPAddress.Parse("127.0.0.1"); 
 
         Debug.Log("Server name: " + host.HostName + "  IP: " + ip);
 
@@ -66,8 +54,14 @@ public class server : MonoBehaviour
     void Start()
     {
         myCube = GameObject.Find("Cube");
+        //posx = myCube.transform.position.x;
+        //posy = myCube.transform.position.y;
+        //posz = myCube.transform.position.z;
 
         RunServer();
+
+        // non-blocking socket mode
+        server_socket.Blocking = false;
     }
 
     // Update is called once per frame
@@ -75,25 +69,28 @@ public class server : MonoBehaviour
     {
         try
         {
-            int rec = server_socket.ReceiveFrom(buffer, ref remoteClient);
+            rec = server_socket.ReceiveFrom(buffer, ref remoteClient);
 
             //Debug.Log("Received x: " + Encoding.ASCII.GetString(buffer, 0, rec) + "  from Client: " + remoteClient.ToString());
 
             //rec = server_socket.ReceiveFrom(buffer, ref remoteClient);
 
             //Debug.Log("Received y: " + Encoding.ASCII.GetString(buffer, 0, rec) + "  from Client: " + remoteClient.ToString());
-
-            Debug.Log("Received: X: " + BitConverter.ToSingle(buffer, 0 * sizeof(float)) + 
-                              "  Z: " + BitConverter.ToSingle(buffer, 1 * sizeof(float)) + 
-                              "  from Client: " + remoteClient.ToString());
-
-            myCube.transform.position = new Vector3(BitConverter.ToSingle(buffer, 0), myCube.transform.position.y, BitConverter.ToSingle(buffer, 1 * sizeof(float)));
-
         }
-        catch (Exception e)
+        catch (SocketException e)
         {
-            Debug.Log(e.ToString());
+            Debug.Log("Exception: " + e.ToString());
         }
+
+        float[] pos = new float[rec / 4];
+        Buffer.BlockCopy(buffer, 0, pos, 0, rec);
+        //posx = BitConverter.ToSingle(buffer, 0);
+        //posy = BitConverter.ToSingle(buffer, 1 * sizeof(float));
+        //posz = BitConverter.ToSingle(buffer, 2 * sizeof(float));
+
+        //Debug.Log("Received: X: " + posx + "  Y: " + posy + "  Z: " + posz + "  from Client: " + remoteClient.ToString());
+
+        myCube.transform.position = new Vector3(pos[0], pos[1], pos[2]);
     }
 
 
