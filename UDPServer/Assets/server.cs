@@ -82,7 +82,8 @@ public class server : MonoBehaviour
             Debug.Log("Exception: " + e.ToString());
         }
 
-        float[] pos = new float[rec / 4];
+        //float[] pos = new float[rec / 4];
+        float[] pos = new float[3];
         Buffer.BlockCopy(buffer, 0, pos, 0, rec);
         //posx = BitConverter.ToSingle(buffer, 0);
         //posy = BitConverter.ToSingle(buffer, 1 * sizeof(float));
