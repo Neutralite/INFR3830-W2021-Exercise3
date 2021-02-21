@@ -66,10 +66,36 @@ public class client : MonoBehaviour
         //outBuffer = Encoding.ASCII.GetBytes(myCube.transform.position.z.ToString());
         //client_socket.SendTo(outBuffer, remoteEP);
 
+        //elapsedTime += Time.deltaTime;
+        //if (elapsedTime >= delayTime)
+        //{
+        //    UpdatePosition();
+        //    elapsedTime = 0;
+        //}
+
         elapsedTime += Time.deltaTime;
         if (elapsedTime >= delayTime)
         {
-            UpdatePosition();
+            if (pos[0] != myCube.transform.position.x || pos[1] != myCube.transform.position.y || pos[2] != myCube.transform.position.z)
+            {
+                pos[0] = myCube.transform.position.x;
+                pos[1] = myCube.transform.position.y;
+                pos[2] = myCube.transform.position.z;
+                byte[] bpos = new byte[pos.Length * 4];
+
+                // From https://answers.unity.com/questions/683693/converting-vector3-to-byte.html,
+                // there's this nifty Buffer.BlockCopy trick.
+
+                //Buffer.BlockCopy(BitConverter.GetBytes(myCube.transform.position.x), 0, outBuffer, 0 * sizeof(float), sizeof(float));
+                //Buffer.BlockCopy(BitConverter.GetBytes(myCube.transform.position.y), 0, outBuffer, 1 * sizeof(float), sizeof(float));
+                //Buffer.BlockCopy(BitConverter.GetBytes(myCube.transform.position.z), 0, outBuffer, 2 * sizeof(float), sizeof(float));
+
+                Buffer.BlockCopy(pos, 0, bpos, 0, bpos.Length);
+
+                client_socket.SendTo(bpos, remoteEP);
+
+                Debug.Log("Sent Coordinates!");
+            }
             elapsedTime = 0;
         }
 
